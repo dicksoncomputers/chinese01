@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="zh-HK" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>漢字500 × SPCC 聖保羅男女中學面試衝刺 Dashboard</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts for Traditional Chinese Serif and Sans Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <script>
+    // Custom Tailwind Configuration for SPCC Gold & Navy Branding
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            spcc: {
+              gold: '#D4AF37',
+              lightgold: '#F3E5AB',
+              navy: '#0B192C',
+              card: '#1E293B',
+              accent: '#3B82F6',
+              crimson: '#991B1B'
+            }
+          },
+          fontFamily: {
+            serif: ['Noto Serif TC', 'serif'],
+            sans: ['Plus Jakarta Sans', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #020617; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+    /* Custom Design Tokens & Effects */
+    .gold-gradient { background: linear-gradient(135deg, #FFE259 0%, #FFA751 100%); }
+    .gold-text { background: linear-gradient(135deg, #FAD961 0%, #F76B1C 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .spcc-border { border: 1px solid rgba(212, 175, 55, 0.3); }
+    .spcc-glow { box-shadow: 0 0 25px rgba(212, 175, 55, 0.12); }
+    .tab-active { border-bottom: 3px solid #D4AF37; color: #D4AF37; font-weight: 700; }
+    
+    /* Hide scrollbar for tab navigation */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+</head>
+<body class="h-full flex flex-col font-sans bg-slate-950 text-slate-100 overflow-x-hidden selection:bg-amber-500 selection:text-slate-950">
+
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap justify-between items-center gap-4">
+      
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-amber-600 flex items-center justify-center text-slate-950 font-serif font-black text-2xl shadow-lg shadow-amber-500/20">
+          聖
+        </div>
+        <div>
+          <h1 class="text-lg sm:text-xl font-bold tracking-tight text-slate-100 flex items-center gap-2">
+            <span>漢字500</span>
+            <span class="text-xs px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-medium">SPCC 面試衝刺系統</span>
+          </h1>
+          <p class="text-xs text-slate-400">聖保羅男女中學／附小 · 每日 30 分鐘全方位語文邏輯備戰</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-3 sm:space-x-6 text-sm">
+        <div class="hidden sm:flex items-center space-x-2 bg-slate-800/80 px-3 py-1.5 rounded-lg border border-slate-700">
+          <i class="fa-solid fa-graduation-cap text-amber-400"></i>
+          <span class="text-xs text-slate-400">目標組別:</span>
+          <select id="targetGrade" onchange="changeTargetGrade(this.value)" class="bg-transparent text-slate-200 text-xs focus:outline-none cursor-pointer font-semibold">
+            <option value="primary" class="bg-slate-900 text-slate-100">小一入學神校組 (P1)</option>
+            <option value="secondary" selected class="bg-slate-900 text-slate-100">中一自行收生組 (S1)</option>
+          </select>
+        </div>
+
+        <div class="flex items-center space-x-2 bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/30">
+          <i class="fa-solid fa-fire text-amber-400 animate-pulse"></i>
+          <span class="text-xs text-slate-300">連續打卡: <strong id="streakDays" class="text-amber-400 font-bold text-sm">7</strong> 天</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="bg-slate-900 border-t border-slate-800/80 px-4 sm:px-8">
+      <div class="max-w-7xl mx-auto flex space-x-2 sm:space-x-8 overflow-x-auto no-scrollbar text-sm">
+        <button onclick="switchTab('daily')" id="tab-daily" class="py-3 px-2 flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-amber-400 transition-colors tab-active">
+          <i class="fa-solid fa-stopwatch text-amber-400"></i>
+          <span>每日 30 分鐘衝刺</span>
+        </button>
+        <button onclick="switchTab('database')" id="tab-database" class="py-3 px-2 flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-book-bookmark"></i>
+          <span>500漢字面試庫</span>
+        </button>
+        <button onclick="switchTab('ai-coach')" id="tab-ai-coach" class="py-3 px-2 flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-robot text-cyan-400"></i>
+          <span>SPCC AI 面試導師</span>
+        </button>
+        <button onclick="switchTab('analytics')" id="tab-analytics" class="py-3 px-2 flex items-center gap-2 whitespace-nowrap text-slate-400 hover:text-amber-400 transition-colors">
+          <i class="fa-solid fa-chart-line text-emerald-400"></i>
+          <span>能力與進度分析</span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+
+    <!-- ==================== TAB 1: DAILY 30-MIN WORKOUT ==================== -->
+    <section id="sec-daily" class="space-y-6">
+      
+      <!-- Top Banner: Draw Today's Session -->
+      <div class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 rounded-2xl p-6 border spcc-border spcc-glow flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-2 text-center md:text-left">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs font-semibold">
+            <i class="fa-solid fa-calendar-day"></i> 今日面試精選組合
+          </div>
+          <h2 class="text-2xl font-serif font-bold text-slate-100">每日 4 步曲：漢字面試邏輯鍛鍊</h2>
+          <p class="text-slate-400 text-sm max-w-2xl">
+            將「漢字」轉化為「語境應用」、「雙語演講」與「SPCC 靈活思辨」。點擊下方按鈕抽取今日 3 個目標漢字進行 30 分鐘實戰。
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-center gap-3">
+          <button onclick="drawDailyCharacters()" class="px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold hover:from-amber-400 hover:to-amber-500 transition shadow-lg shadow-amber-500/20 flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-shuffle"></i>
+            <span>隨機抽取 3 字</span>
+          </button>
+          <button onclick="resetDailyTimer()" class="px-4 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium border border-slate-700 transition flex items-center gap-2 text-sm">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>重置流程</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Today's Drawn Cards Preview -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="dailyCardsContainer">
+        <!-- Rendered via JavaScript -->
+      </div>
+
+      <div class="bg-slate-900/90 rounded-2xl border border-slate-800 p-6 space-y-6">
+        
+        <!-- Step Indicator Bar -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs sm:text-sm">
+          <button onclick="goToWorkoutStep(1)" id="step-btn-1" class="p-3 rounded-xl border border-amber-500/50 bg-amber-500/10 text-amber-300 font-semibold text-left transition flex items-center justify-between">
+            <div>
+              <div class="text-amber-400 text-[11px] uppercase font-bold">第一步 · 5分鐘</div>
+              <div class="text-slate-100 font-serif text-sm">字理與雙語認讀</div>
+            </div>
+            <i class="fa-solid fa-volume-high text-amber-400 text-lg"></i>
+          </button>
+
+          <button onclick="goToWorkoutStep(2)" id="step-btn-2" class="p-3 rounded-xl border border-slate-800 bg-slate-800/40 text-slate-400 font-semibold text-left transition flex items-center justify-between">
+            <div>
+              <div class="text-slate-400 text-[11px] uppercase font-bold">第二步 · 5分鐘</div>
+              <div class="text-slate-200 font-serif text-sm">高級詞彙與成語</div>
+            </div>
+            <i class="fa-solid fa-cubes text-slate-400 text-lg"></i>
+          </button>
+
+          <button onclick="goToWorkoutStep(3)" id="step-btn-3" class="p-3 rounded-xl border border-slate-800 bg-slate-800/40 text-slate-400 font-semibold text-left transition flex items-center justify-between">
+            <div>
+              <div class="text-slate-400 text-[11px] uppercase font-bold">第三步 · 10分鐘</div>
+              <div class="text-slate-200 font-serif text-sm">即席故事與邏輯組織</div>
+            </div>
+            <i class="fa-solid fa-comment-dots text-slate-400 text-lg"></i>
+          </button>
+
+          <button onclick="goToWorkoutStep(4)" id="step-btn-4" class="p-3 rounded-xl border border-slate-800 bg-slate-800/40 text-slate-400 font-semibold text-left transition flex items-center justify-between">
+            <div>
+              <div class="text-slate-400 text-[11px] uppercase font-bold">第四步 · 10分鐘</div>
+              <div class="text-slate-200 font-serif text-sm">SPCC 時事與價值觀</div>
+            </div>
+            <i class="fa-solid fa-brain text-slate-400 text-lg"></i>
+          </button>
+        </div>
+
+        <!-- Timer Control Header -->
+        <div class="flex items-center justify-between bg-slate-950 p-4 rounded-xl border border-slate-800">
+          <div class="flex items-center space-x-3">
+            <div id="stepBadge" class="w-8 h-8 rounded-full bg-amber-500/20 text-amber-400 font-bold flex items-center justify-center font-mono">
+              1
+            </div>
+            <div>
+              <h3 id="stepTitle" class="font-serif font-bold text-slate-100 text-base sm:text-lg">第一步：字理與認讀（奠定文化底蘊）</h3>
+              <p id="stepSub" class="text-xs text-slate-400">標準粵普雙語發音 · 字理演變 · 文學典故鏈接</p>
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-4">
+            <div class="text-right">
+              <div class="text-[11px] text-slate-400">本階段剩餘時間</div>
+              <div id="timerDisplay" class="text-2xl font-mono font-bold text-amber-400">05:00</div>
+            </div>
+            <button id="timerToggleBtn" onclick="toggleTimer()" class="w-10 h-10 rounded-xl bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition flex items-center justify-center">
+              <i class="fa-solid fa-play"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step Dynamic Content Panels -->
+        <div id="workoutStepContent" class="space-y-6">
+          <!-- Content loaded dynamically via JS -->
+        </div>
+
+        <!-- Step Navigation Control Bar -->
+        <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+          <button onclick="prevStep()" id="prevStepBtn" disabled class="px-4 py-2 rounded-lg bg-slate-800 text-slate-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-700 text-xs font-medium">
+            <i class="fa-solid fa-arrow-left mr-1"></i> 上一步
+          </button>
+          <span class="text-xs text-slate-500">SPCC 30 分鐘全流程模擬</span>
+          <button onclick="nextStep()" id="nextStepBtn" class="px-5 py-2 rounded-lg bg-amber-500 text-slate-950 hover:bg-amber-400 text-xs font-bold transition">
+            下一步 <i class="fa-solid fa-arrow-right ml-1"></i>
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ==================== TAB 2: 500 CHARACTER DATABASE ==================== -->
+    <section id="sec-database" class="space-y-6 hidden">
+      <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-serif font-bold text-slate-100">500 漢字 SPCC 面試智庫</h2>
+          <p class="text-slate-400 text-sm">包含「字理演變」、「高級成語」、「文言詩詞」及「SPCC 模擬思辨面試題」</p>
+        </div>
+        
+        <button onclick="openAddCharModal()" class="px-4 py-2 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 text-xs font-semibold transition flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> 新增漢字面試卡
+        </button>
+      </div>
+
+      <!-- Filters & Search Bar -->
+      <div class="bg-slate-900 rounded-xl p-4 border border-slate-800 flex flex-col md:flex-row gap-4 items-center justify-between">
+        <div class="relative w-full md:w-80">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500 text-xs"></i>
+          <input type="text" id="dbSearch" oninput="filterDatabase()" placeholder="搜尋漢字、成語、拼音或關鍵字..." class="w-full bg-slate-950 text-slate-100 pl-9 pr-4 py-2 rounded-lg border border-slate-800 focus:outline-none focus:border-amber-500 text-xs">
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto text-xs">
+          <select id="dbCategory" onchange="filterDatabase()" class="bg-slate-950 text-slate-200 px-3 py-2 rounded-lg border border-slate-800 focus:outline-none cursor-pointer">
+            <option value="all">所有類別 (All Themes)</option>
+            <option value="tech">科技與生活 (Tech & Society)</option>
+            <option value="culture">文化與道德 (Culture & Ethics)</option>
+            <option value="nature">自然與思維 (Nature & Mind)</option>
+            <option value="literature">古典與文學 (Literature)</option>
+          </select>
+
+          <select id="dbTag" onchange="filterDatabase()" class="bg-slate-950 text-slate-200 px-3 py-2 rounded-lg border border-slate-800 focus:outline-none cursor-pointer">
+            <option value="all">所有標籤</option>
+            <option value="成語精選">成語精選</option>
+            <option value="詩詞連結">詩詞連結</option>
+            <option value="普粵辨析">普粵辨析</option>
+            <option value="SPCC重點">SPCC重點</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Character Grid -->
+      <div id="characterGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered dynamically -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: SPCC AI INTERVIEW COACH ==================== -->
+    <section id="sec-ai-coach" class="space-y-6 hidden">
+      <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-6">
+        <div class="flex items-center space-x-3">
+          <div class="w-12 h-12 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-2xl">
+            <i class="fa-solid fa-robot"></i>
+          </div>
+          <div>
+            <h2 class="text-xl font-serif font-bold text-slate-100">SPCC 模擬考官 AI 即時點評系統</h2>
+            <p class="text-xs text-slate-400">基於聖保羅男女中學面試評分規準：兩文三語表達、邏輯結構、批判思維、文學積澱</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <!-- Left Input Form -->
+          <div class="lg:col-span-5 space-y-4">
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">面試題目 (Scenario / Question)</label>
+              <textarea id="aiQuestion" rows="3" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-cyan-500" placeholder="例如：今日我們學到「網」字。你認為青少年沉迷網絡，對現實人際關係有甚麼影響？你支持學校全面禁用手機嗎？"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">使用的目標漢字/成語 (Target Vocab)</label>
+              <input type="text" id="aiVocab" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500" placeholder="例如：網、廣結善緣、見多識廣">
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">學生的回答 (口述記錄 / 文字草稿)</label>
+              <textarea id="aiStudentAnswer" rows="6" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-cyan-500" placeholder="請寫下或貼上學生的回答內容...（建議使用『第一、第二』或『一方面、另一方面』結構）"></textarea>
+            </div>
+
+            <button onclick="evaluateAnswerWithGemini()" id="aiEvaluateBtn" class="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-slate-100 font-bold rounded-xl hover:from-cyan-500 hover:to-blue-500 transition shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 text-xs">
+              <i class="fa-solid fa-sparkles"></i>
+              <span>SPCC 考官評分與神級優化</span>
+            </button>
+          </div>
+
+          <!-- Right Evaluation Output -->
+          <div class="lg:col-span-7 bg-slate-950 rounded-xl p-5 border border-slate-800 flex flex-col justify-between space-y-4 min-h-[350px]">
+            <div id="aiOutputPlaceholder" class="flex flex-col items-center justify-center h-full text-slate-500 space-y-3 py-12">
+              <i class="fa-solid fa-comments text-4xl text-slate-700"></i>
+              <p class="text-xs text-center max-w-sm">在左側輸入面試題目與學生回答，AI 導師將即時給出 SPCC 級別的 4 維度評分與優化建議。</p>
+            </div>
+
+            <div id="aiOutputContent" class="hidden space-y-4">
+              <!-- Rendered AI Evaluation -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: ANALYTICS & PROGRESS ==================== -->
+    <section id="sec-analytics" class="space-y-6 hidden">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-900 rounded-xl p-5 border border-slate-800">
+          <div class="text-xs text-slate-400">掌握漢字總數</div>
+          <div class="text-3xl font-bold font-serif text-amber-400 mt-1">48 / 500</div>
+          <div class="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+            <div class="bg-amber-400 h-full w-[9.6%]"></div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 rounded-xl p-5 border border-slate-800">
+          <div class="text-xs text-slate-400">已累積面試語料題</div>
+          <div class="text-3xl font-bold font-serif text-cyan-400 mt-1">142 題</div>
+          <p class="text-[11px] text-slate-500 mt-2">包含時事、價值觀與情境演講</p>
+        </div>
+
+        <div class="bg-slate-900 rounded-xl p-5 border border-slate-800">
+          <div class="text-xs text-slate-400">兩文三語準備度</div>
+          <div class="text-3xl font-bold font-serif text-emerald-400 mt-1">85%</div>
+          <p class="text-[11px] text-slate-500 mt-2">粵普雙語與即時轉化指標</p>
+        </div>
+
+        <div class="bg-slate-900 rounded-xl p-5 border border-slate-800">
+          <div class="text-xs text-slate-400">SPCC 面試邏輯級別</div>
+          <div class="text-3xl font-bold font-serif text-purple-400 mt-1">Level 4</div>
+          <p class="text-[11px] text-slate-500 mt-2">結構化思考 (二分法/多角度)</p>
+        </div>
+      </div>
+
+      <!-- Analytics Breakdown Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-4">
+          <h3 class="font-serif font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-bullseye text-amber-400"></i> SPCC 面試核心能力五維模型
+          </h3>
+          <div class="space-y-3 text-sm">
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>1. 字理底蘊與詩詞文言積澱</span>
+                <span class="text-amber-400 font-bold">88%</span>
+              </div>
+              <div class="bg-slate-950 h-2 rounded-full overflow-hidden">
+                <div class="bg-amber-400 h-full w-[88%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>2. 成語與高級詞彙靈活度</span>
+                <span class="text-cyan-400 font-bold">82%</span>
+              </div>
+              <div class="bg-slate-950 h-2 rounded-full overflow-hidden">
+                <div class="bg-cyan-400 h-full w-[82%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>3. 即席故事組織與三段式結構</span>
+                <span class="text-emerald-400 font-bold">75%</span>
+              </div>
+              <div class="bg-slate-950 h-2 rounded-full overflow-hidden">
+                <div class="bg-emerald-400 h-full w-[75%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>4. 時事開放題多角度思辨</span>
+                <span class="text-purple-400 font-bold">90%</span>
+              </div>
+              <div class="bg-slate-950 h-2 rounded-full overflow-hidden">
+                <div class="bg-purple-400 h-full w-[90%]"></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>5. 粵普雙語極速切換能力</span>
+                <span class="text-pink-400 font-bold">80%</span>
+              </div>
+              <div class="bg-slate-950 h-2 rounded-full overflow-hidden">
+                <div class="bg-pink-400 h-full w-[80%]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 rounded-2xl p-6 border border-slate-800 space-y-4">
+          <h3 class="font-serif font-bold text-slate-100 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-emerald-400"></i> 專家備戰備忘錄 (SPCC Checklist)
+          </h3>
+          <ul class="space-y-2.5 text-xs text-slate-300">
+            <li class="flex items-start gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+              <i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i>
+              <span><strong>答題結構化:</strong> 時刻使用「第一，第二」、「一方面，另一方面」、「總括而言」等連接詞。</span>
+            </li>
+            <li class="flex items-start gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+              <i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i>
+              <span><strong>成語精準性:</strong> 每句避免平淡，替換高階詞彙（如用「廣結善緣」代替「交很多朋友」）。</span>
+            </li>
+            <li class="flex items-start gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+              <i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i>
+              <span><strong>同理心與價值觀:</strong> 在科技或社會題中，強調人性關懷與社會責任感。</span>
+            </li>
+            <li class="flex items-start gap-2 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+              <i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i>
+              <span><strong>詩詞典故自然引用:</strong> 面試中如能適時吟誦一句古詩，即時展示高雅文化底蘊。</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="addCharModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex justify-between items-center">
+        <h3 class="font-serif font-bold text-lg text-slate-100">新增漢字面試卡</h3>
+        <button onclick="closeAddCharModal()" class="text-slate-400 hover:text-slate-200">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block text-slate-400 mb-1">漢字 (Single Character)</label>
+          <input type="text" id="modalChar" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2.5 text-slate-100 font-serif text-lg font-bold">
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-slate-400 mb-1">粵音 (Cantonese Jyutping)</label>
+            <input type="text" id="modalCantonese" placeholder="e.g. gwong2" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-100">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">國音 (Mandarin Pinyin)</label>
+            <input type="text" id="modalMandarin" placeholder="e.g. guǎng" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-100">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">字理演變 (Etymology)</label>
+          <input type="text" id="modalEtymology" placeholder="簡述字形與造字含義..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-100">
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">高級詞彙與成語 (逗號分隔)</label>
+          <input type="text" id="modalIdioms" placeholder="廣結善緣, 見多識廣, 廣袤無垠" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-100">
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">詩詞文言連結</label>
+          <input type="text" id="modalPoetry" placeholder="e.g. 《江雪》：「孤舟蓑笠翁，獨釣寒江雪」" class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-100">
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">SPCC 模擬靈活面試題</label>
+          <textarea id="modalSpccQuestion" rows="2" placeholder="延伸開放式考題..." class="w-full bg-slate-950 border border-slate-800 rounded-lg p-2 text-slate-100"></textarea>
+        </div>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2">
+        <button onclick="closeAddCharModal()" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-lg hover:bg-slate-700 text-xs font-medium">取消</button>
+        <button onclick="saveNewCharacter()" class="px-4 py-2 bg-amber-500 text-slate-950 font-bold rounded-lg hover:bg-amber-400 text-xs">儲存至面試庫</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const defaultCharacters = [
+      {
+        id: 1,
+        char: "廣",
+        cantonese: "gwong2",
+        mandarin: "guǎng",
+        category: "culture",
+        etymology: "從「廣」(黃帝屋)，表寬廣宏大之意，象徵包容與廣博。",
+        idioms: ["廣結善緣", "見多識廣", "廣袤無垠"],
+        poetry: "杜甫《茅屋為秋風所破歌》：「安得廣廈千萬間，大庇天下寒士俱歡顏！」",
+        spccQuestion: "「廣」代表胸懷寬廣。在小組討論中，若有人持與你完全相反的意見，你如何展現『包容』並整合大家的想法？",
+        diffNotes: "粵語日常稱「行街」，普通話稱「逛街/走走」；「廣」作動詞有推廣、擴大之意。",
+        tags: ["成語精選", "詩詞連結", "SPCC重點"]
+      },
+      {
+        id: 2,
+        char: "網",
+        cantonese: "mong5",
+        mandarin: "wǎng",
+        category: "tech",
+        etymology: "象形字，像網羅交錯之形。現延伸為互聯網、人際網絡。",
+        idioms: ["網開一面", "天羅地網", "漏網之魚"],
+        poetry: "《古詩十九首》：「魚戲蓮葉東，魚戲蓮葉西。」（引申為網羅與自由）",
+        spccQuestion: "中學生沉迷網上虛擬世界，對現實人際關係有甚麼影響？你支持學校在校園全面禁用智慧型手機嗎？",
+        diffNotes: "粵語「上網睇片」，普通話「上網看視頻/影片」。",
+        tags: ["SPCC重點", "成語精選"]
+      },
+      {
+        id: 3,
+        char: "信",
+        cantonese: "seon3",
+        mandarin: "xìn",
+        category: "culture",
+        etymology: "會意字，從「人」從「言」，人言有信，代表誠信與資訊。",
+        idioms: ["信守不渝", "深信不疑", "推誠相信"],
+        poetry: "《論語》：「人而無信，不知其可也。」",
+        spccQuestion: "在AI人工智能可以輕易生成假新聞的時代，你認為我們該如何培養『分辨資訊真偽』與『保持誠信』的能力？",
+        diffNotes: "粵語「收封信/相信」，普通話「收到一封信/信任」。",
+        tags: ["成語精選", "詩詞連結", "SPCC重點"]
+      },
+      {
+        id: 4,
+        char: "孤",
+        cantonese: "gu1",
+        mandarin: "gū",
+        category: "literature",
+        etymology: "形聲字，本義為幼年喪父，引申為獨特、獨立不群。",
+        idioms: ["孤芳自賞", "獨具隻眼", "孤掌難鳴"],
+        poetry: "柳宗元《江雪》：「孤舟蓑笠翁，獨釣寒江雪。」",
+        spccQuestion: "柳宗元的「孤舟」展示了堅守內心的性格。在追求卓越的路上，你如何面對『孤獨』與挑戰？",
+        diffNotes: "普粵讀音接近，常用於高階文學表達。",
+        tags: ["詩詞連結", "成語精選"]
+      },
+      {
+        id: 5,
+        char: "舟",
+        cantonese: "zau1",
+        mandarin: "zhōu",
+        category: "literature",
+        etymology: "象形字，像小船之形。古文中常用作載體與志向的象徵。",
+        idioms: ["同舟共濟", "破釜沉舟", "水能載舟"],
+        poetry: "李白《早發白帝城》：「兩岸猿聲啼不住，輕舟已過萬重山。」",
+        spccQuestion: "「同舟共濟」是香港精神。你認為中學生可以如何在校園或社區中落實團隊合作精神？",
+        diffNotes: "粵語口語多用「船」，書面語及面試演講用「舟/同舟共濟」。",
+        tags: ["詩詞連結", "普粵辨析", "SPCC重點"]
+      },
+      {
+        id: 6,
+        char: "創",
+        cantonese: "cong3",
+        mandarin: "chuàng",
+        category: "tech",
+        etymology: "從刀，倉聲。本義開創、始造，代表創新與創業精神。",
+        idioms: ["標新立異", "別出心裁", "開天闢地"],
+        poetry: "《禮記》：「苟日新，日日新，又日新。」",
+        spccQuestion: "SPCC 十分重視學生的創新思維。如果你要為學校設計一個『綠色科技創意項目』，你會提出甚麼建議？",
+        diffNotes: "粵語「創意/創新」，普通話發音為 chuàng (第四聲)。",
+        tags: ["SPCC重點", "成語精選"]
+      },
+      {
+        id: 7,
+        char: "仁",
+        cantonese: "jan4",
+        mandarin: "rén",
+        category: "culture",
+        etymology: "從人從二，代表二人相處之道，儒家思想的核心：愛人與同理心。",
+        idioms: ["仁民愛物", "仁者無敵", "醫者仁心"],
+        poetry: "《論語》：「仁者不憂，知者不惑，勇者不懼。」",
+        spccQuestion: "當科技越來越發達，你認為『仁愛與同理心』會被人工智能取代嗎？為什麼？",
+        diffNotes: "儒家核心概念，面試回答價值觀題目的加分神器。",
+        tags: ["詩詞連結", "SPCC重點"]
+      },
+      {
+        id: 8,
+        char: "變",
+        cantonese: "bin3",
+        mandarin: "biàn",
+        category: "nature",
+        etymology: "從言從攵，代表更替、演變與應變能力。",
+        idioms: ["隨機應變", "變通趨時", "千變萬化"],
+        poetry: "蘇軾《赤壁賦》：「自其變者而觀之，則天地曾不能以一瞬。」",
+        spccQuestion: "面對快速變化的未來（例如AI時代），你認為學生最需要具備哪一種『不變』的品質？",
+        diffNotes: "普粵意思一致，常用於考驗即時應變能力。",
+        tags: ["成語精選", "SPCC重點"]
+      }
+    ];
+
+    let characterDB = [...defaultCharacters];
+    let dailySelected = [];
+    let currentWorkoutStep = 1;
+    let timerSeconds = 300; // 5 minutes default
+    let timerInterval = null;
+    let isTimerRunning = false;
+
+    // Window load initialization
+    window.onload = function() {
+      drawDailyCharacters();
+      renderCharacterGrid(characterDB);
+      updateWorkoutStepUI();
+    };
+
+    function switchTab(tabName) {
+      const tabs = ['daily', 'database', 'ai-coach', 'analytics'];
+      tabs.forEach(t => {
+        const sec = document.getElementById(`sec-${t}`);
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tabName) {
+          sec.classList.remove('hidden');
+          btn.classList.add('tab-active');
+        } else {
+          sec.classList.add('hidden');
+          btn.classList.remove('tab-active');
+        }
+      });
+    }
+
+    function changeTargetGrade(val) {
+      const label = val === 'primary' ? '小一入學神校組' : '中一自行收生組';
+      showToast(`已切換目標為：${label}`);
+    }
+
+    function drawDailyCharacters() {
+      const shuffled = [...characterDB].sort(() => 0.5 - Math.random());
+      dailySelected = shuffled.slice(0, 3);
+      renderDailyCards();
+      resetWorkoutStep();
+    }
+
+    function renderDailyCards() {
+      const container = document.getElementById('dailyCardsContainer');
+      container.innerHTML = dailySelected.map(c => `
+        <div class="bg-slate-900/90 rounded-2xl p-5 border spcc-border hover:border-amber-500/50 transition space-y-3 relative overflow-hidden group">
+          <div class="absolute -right-4 -top-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition"></div>
+          
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <span class="font-serif font-black text-4xl text-amber-400 drop-shadow">${c.char}</span>
+              <div>
+                <div class="text-xs text-slate-400 font-mono">粵: <span class="text-slate-200">${c.cantonese}</span> | 國: <span class="text-slate-200">${c.mandarin}</span></div>
+                <div class="text-[11px] text-amber-500/80 font-medium">${c.tags.join(' · ')}</div>
+              </div>
+            </div>
+            <button onclick="speakChar('${c.char}')" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-amber-400 flex items-center justify-center text-xs transition" title="朗讀讀音">
+              <i class="fa-solid fa-volume-high"></i>
+            </button>
+          </div>
+
+          <p class="text-xs text-slate-300 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800 line-clamp-2">
+            <strong class="text-amber-400">字理:</strong> ${c.etymology}
+          </p>
+
+          <div class="flex flex-wrap gap-1">
+            ${c.idioms.map(i => `<span class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-serif border border-slate-700">${i}</span>`).join('')}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function goToWorkoutStep(step) {
+      currentWorkoutStep = step;
+      updateWorkoutStepUI();
+    }
+
+    function nextStep() {
+      if (currentWorkoutStep < 4) {
+        currentWorkoutStep++;
+        updateWorkoutStepUI();
+      } else {
+        showToast('🎉 恭喜完成今日 30 分鐘漢字面試練習！');
+      }
+    }
+
+    function prevStep() {
+      if (currentWorkoutStep > 1) {
+        currentWorkoutStep--;
+        updateWorkoutStepUI();
+      }
+    }
+
+    function resetWorkoutStep() {
+      currentWorkoutStep = 1;
+      updateWorkoutStepUI();
+    }
+
+    function updateWorkoutStepUI() {
+      for (let i = 1; i <= 4; i++) {
+        const btn = document.getElementById(`step-btn-${i}`);
+        if (i === currentWorkoutStep) {
+          btn.className = "p-3 rounded-xl border border-amber-500/50 bg-amber-500/10 text-amber-300 font-semibold text-left transition flex items-center justify-between";
+        } else {
+          btn.className = "p-3 rounded-xl border border-slate-800 bg-slate-800/40 text-slate-400 font-semibold text-left transition flex items-center justify-between opacity-70 hover:opacity-100";
+        }
+      }
+
+      document.getElementById('prevStepBtn').disabled = currentWorkoutStep === 1;
+      document.getElementById('nextStepBtn').innerHTML = currentWorkoutStep === 4 ? 
+        '完成今日練習 <i class="fa-solid fa-check ml-1"></i>' : 
+        '下一步 <i class="fa-solid fa-arrow-right ml-1"></i>';
+
+      pauseTimer();
+      timerSeconds = (currentWorkoutStep === 1 || currentWorkoutStep === 2) ? 300 : 600;
+      updateTimerDisplay();
+
+      const stepTitles = [
+        "第一步：字理與認讀（5 分鐘）—— 奠定文化底蘊",
+        "第二步：詞彙拓展與成語接龍（5 分鐘）—— 考核詞彙量",
+        "第三步：情境造句與短文組織（10 分鐘）—— 訓練邏輯與結構",
+        "第四步：時事與個人價值觀反思（10 分鐘）—— 應對 SPCC 靈活問答"
+      ];
+      const stepSubtitles = [
+        "精準朗讀粵普雙音，理解造字字理，並展現古詩詞文學功底。",
+        "即席聯想高階詞彙或成語，避免平淡表達，展現豐富語彙能力。",
+        "將今日 3 個漢字串聯成一個 1 分鐘有頭有尾、邏輯嚴密的故事/演講。",
+        "針對 SPCC 靈活開放題目，運用二分法或多角度提出觀點與合理論據。"
+      ];
+
+      document.getElementById('stepBadge').innerText = currentWorkoutStep;
+      document.getElementById('stepTitle').innerText = stepTitles[currentWorkoutStep - 1];
+      document.getElementById('stepSub').innerText = stepSubtitles[currentWorkoutStep - 1];
+
+      const contentBox = document.getElementById('workoutStepContent');
+      if (dailySelected.length === 0) return;
+
+      if (currentWorkoutStep === 1) {
+        contentBox.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${dailySelected.map(c => `
+              <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                <div class="flex justify-between items-center">
+                  <span class="text-3xl font-serif font-black text-amber-400">${c.char}</span>
+                  <button onclick="speakChar('${c.char}')" class="px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 text-xs hover:bg-amber-500/20">
+                    <i class="fa-solid fa-volume-high mr-1"></i> 粵普發音
+                  </button>
+                </div>
+                <div class="text-xs text-slate-300 space-y-1">
+                  <div><strong>粵音:</strong> ${c.cantonese} | <strong>國音:</strong> ${c.mandarin}</div>
+                  <div><strong>字理:</strong> ${c.etymology}</div>
+                </div>
+                <div class="p-2 bg-slate-900 rounded border border-slate-800 text-xs text-amber-200 font-serif">
+                  <i class="fa-solid fa-book-open text-amber-400 mr-1"></i> ${c.poetry}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="p-4 bg-amber-500/10 border border-amber-500/30 rounded-xl text-xs text-amber-200">
+            <strong>💡 SPCC 面試加分位：</strong> 嘗試讓學生用一句話解釋字理（例如：「『廣』字是由『廣』字頭構成，象徵房屋寬廣，引申為人的胸襟要包容萬物。」）
+          </div>
+        `;
+      } else if (currentWorkoutStep === 2) {
+        contentBox.innerHTML = `
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            ${dailySelected.map(c => `
+              <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                <div class="text-2xl font-serif font-bold text-amber-400 border-b border-slate-800 pb-2">${c.char} · 成語與高級詞彙</div>
+                <div class="space-y-1.5">
+                  ${c.idioms.map(idiom => `
+                    <div class="flex items-center justify-between text-xs bg-slate-900 p-2 rounded border border-slate-800">
+                      <span class="font-serif font-bold text-slate-100">${idiom}</span>
+                      <button onclick="speakText('${idiom}')" class="text-slate-400 hover:text-amber-400">
+                        <i class="fa-solid fa-volume-high"></i>
+                      </button>
+                    </div>
+                  `).join('')}
+                </div>
+                <div class="text-[11px] text-slate-400">
+                  <strong class="text-slate-300">普粵辨析:</strong> ${c.diffNotes}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs space-y-2">
+            <h4 class="font-bold text-slate-200 flex items-center gap-2">
+              <i class="fa-solid fa-gamepad text-amber-400"></i> 成語接龍與即席擴詞挑戰
+            </h4>
+            <p class="text-slate-400">請學生挑選其中一個字，在 10 秒內說出 3 個高階詞彙，或用該成語造句。</p>
+          </div>
+        `;
+      } else if (currentWorkoutStep === 3) {
+        const combinedChars = dailySelected.map(c => c.char).join('、');
+        contentBox.innerHTML = `
+          <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+              <div>
+                <h4 class="font-serif font-bold text-amber-400 text-base">即席串聯口述大挑戰</h4>
+                <p class="text-xs text-slate-400">必須在 1 分鐘內，將今日 3 個字【${combinedChars}】全部融入一段有結構的故事或演講中。</p>
+              </div>
+              <span class="text-xs px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+                1分鐘小組個人演講變體
+              </span>
+            </div>
+
+            <div class="p-3 bg-slate-900 rounded-lg border border-slate-800 text-xs text-slate-300 space-y-2">
+              <strong class="text-amber-400">推薦口述結構（3段式）：</strong>
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-slate-400">
+                <div class="bg-slate-950 p-2 rounded border border-slate-800">1. 開頭（引入主題與總結句）</div>
+                <div class="bg-slate-950 p-2 rounded border border-slate-800">2. 發展（融合 3 字，闡述事理/故事）</div>
+                <div class="bg-slate-950 p-2 rounded border border-slate-800">3. 結尾（提煉價值觀或個人體會）</div>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs text-slate-400 mb-1">學生口述筆記 / 家長速記草稿：</label>
+              <textarea id="storyDraft" rows="3" class="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-slate-100 focus:outline-none focus:border-amber-500" placeholder="可以在此記錄學生的回答大綱..."></textarea>
+            </div>
+          </div>
+        `;
+      } else if (currentWorkoutStep === 4) {
+        const selectedForQuestion = dailySelected[0];
+        contentBox.innerHTML = `
+          <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 space-y-4">
+            <div class="flex items-center space-x-2 text-xs text-amber-400 font-bold uppercase">
+              <i class="fa-solid fa-circle-question"></i> SPCC 深度開放式考題
+            </div>
+
+            <div class="text-sm font-serif font-bold text-slate-100 bg-slate-900 p-4 rounded-xl border border-slate-800 leading-relaxed">
+              以「${selectedForQuestion.char}」字延伸考題：<br>
+              <span class="text-amber-300 font-sans font-normal text-sm">${selectedForQuestion.spccQuestion}</span>
+            </div>
+
+            <div class="space-y-2">
+              <div class="text-xs text-slate-400 flex items-center justify-between">
+                <span>答題邏輯框架 (Structuring Your Thoughts)</span>
+                <span class="text-slate-500">提示：句首使用結構連接詞</span>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                <div class="p-2.5 bg-slate-900 rounded-lg border border-slate-800 text-slate-300">
+                  <strong class="text-cyan-400">正面 / 一方面：</strong> 提供合理論據、社會利潤或個人成長。
+                </div>
+                <div class="p-2.5 bg-slate-900 rounded-lg border border-slate-800 text-slate-300">
+                  <strong class="text-amber-400">反面 / 另一方面：</strong> 指出潛在隱患、人文關懷或解決方案。
+                </div>
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button onclick="sendQuestionToAICoach('${selectedForQuestion.spccQuestion.replace(/'/g, "\\'")}', '${selectedForQuestion.char}')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-slate-100 text-xs font-bold hover:from-cyan-500 hover:to-blue-500 transition flex items-center gap-2">
+                <i class="fa-solid fa-paper-plane"></i> 轉至 AI 考官進行擬真試答與評分
+              </button>
+            </div>
+          </div>
+        `;
+      }
+    }
+
+    function toggleTimer() {
+      if (isTimerRunning) {
+        pauseTimer();
+      } else {
+        startTimer();
+      }
+    }
+
+    function startTimer() {
+      if (isTimerRunning) return;
+      isTimerRunning = true;
+      document.getElementById('timerToggleBtn').innerHTML = '<i class="fa-solid fa-pause"></i>';
+      timerInterval = setInterval(() => {
+        if (timerSeconds > 0) {
+          timerSeconds--;
+          updateTimerDisplay();
+        } else {
+          pauseTimer();
+          showToast('⏰ 本階段時間到！建議進入下一步。');
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      isTimerRunning = false;
+      clearInterval(timerInterval);
+      const btn = document.getElementById('timerToggleBtn');
+      if (btn) btn.innerHTML = '<i class="fa-solid fa-play"></i>';
+    }
+
+    function resetDailyTimer() {
+      pauseTimer();
+      currentWorkoutStep = 1;
+      updateWorkoutStepUI();
+      showToast('計時器與流程已重置');
+    }
+
+    function updateTimerDisplay() {
+      const mins = Math.floor(timerSeconds / 60);
+      const secs = timerSeconds % 60;
+      const str = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      const el = document.getElementById('timerDisplay');
+      if (el) el.innerText = str;
+    }
+
+    function renderCharacterGrid(data) {
+      const grid = document.getElementById('characterGrid');
+      if (data.length === 0) {
+        grid.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 text-sm">沒有找到符合條件的漢字卡片</div>`;
+        return;
+      }
+
+      grid.innerHTML = data.map(c => `
+        <div class="bg-slate-900 rounded-2xl p-5 border border-slate-800 hover:border-amber-500/40 transition space-y-4 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center space-x-3">
+                <span class="font-serif font-black text-4xl text-amber-400">${c.char}</span>
+                <div>
+                  <div class="text-xs text-slate-400 font-mono">粵: ${c.cantonese} | 國: ${c.mandarin}</div>
+                  <div class="flex flex-wrap gap-1 mt-1">
+                    ${c.tags.map(t => `<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">${t}</span>`).join('')}
+                  </div>
+                </div>
+              </div>
+              <button onclick="speakChar('${c.char}')" class="text-slate-400 hover:text-amber-400 p-1">
+                <i class="fa-solid fa-volume-high"></i>
+              </button>
+            </div>
+
+            <p class="text-xs text-slate-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+              <strong class="text-amber-400">字理演變:</strong> ${c.etymology}
+            </p>
+
+            <div class="space-y-1">
+              <div class="text-[11px] text-slate-400">成語/高級詞彙:</div>
+              <div class="flex flex-wrap gap-1">
+                ${c.idioms.map(i => `<span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-200 font-serif">${i}</span>`).join('')}
+              </div>
+            </div>
+
+            <div class="text-xs text-amber-200/80 font-serif italic bg-amber-500/5 p-2 rounded border border-amber-500/10">
+              ${c.poetry}
+            </div>
+          </div>
+
+          <div class="pt-3 border-t border-slate-800/80 space-y-2">
+            <div class="text-[11px] font-bold text-cyan-400 flex items-center gap-1">
+              <i class="fa-solid fa-brain"></i> SPCC 面試伸展題:
+            </div>
+            <p class="text-xs text-slate-300 line-clamp-2">${c.spccQuestion}</p>
+            <button onclick="sendQuestionToAICoach('${c.spccQuestion.replace(/'/g, "\\'")}', '${c.char}')" class="w-full py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-medium transition flex items-center justify-center gap-1">
+              <span>在 AI 考官模擬回答</span> <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterDatabase() {
+      const query = document.getElementById('dbSearch').value.toLowerCase().trim();
+      const cat = document.getElementById('dbCategory').value;
+      const tag = document.getElementById('dbTag').value;
+
+      const filtered = characterDB.filter(c => {
+        const matchesQuery = c.char.includes(query) || 
+                             c.cantonese.includes(query) || 
+                             c.mandarin.includes(query) || 
+                             c.idioms.some(i => i.includes(query)) ||
+                             c.etymology.includes(query);
+        const matchesCat = cat === 'all' || c.category === cat;
+        const matchesTag = tag === 'all' || c.tags.includes(tag);
+        return matchesQuery && matchesCat && matchesTag;
+      });
+
+      renderCharacterGrid(filtered);
+    }
+
+    function openAddCharModal() {
+      document.getElementById('addCharModal').classList.remove('hidden');
+    }
+
+    function closeAddCharModal() {
+      document.getElementById('addCharModal').classList.add('hidden');
+    }
+
+    function saveNewCharacter() {
+      const char = document.getElementById('modalChar').value.trim();
+      if (!char) {
+        showToast('請輸入漢字');
+        return;
+      }
+
+      const newObj = {
+        id: Date.now(),
+        char: char,
+        cantonese: document.getElementById('modalCantonese').value.trim() || 'gwong2',
+        mandarin: document.getElementById('modalMandarin').value.trim() || 'guǎng',
+        category: 'culture',
+        etymology: document.getElementById('modalEtymology').value.trim() || '自訂字理演變說明',
+        idioms: document.getElementById('modalIdioms').value.split(',').map(s => s.trim()).filter(Boolean),
+        poetry: document.getElementById('modalPoetry').value.trim() || '典故詩詞連結',
+        spccQuestion: document.getElementById('modalSpccQuestion').value.trim() || '請闡述該字在現代社會的意義。',
+        diffNotes: '自訂普粵對照筆記',
+        tags: ['SPCC重點', '自訂']
+      };
+
+      characterDB.unshift(newObj);
+      filterDatabase();
+      closeAddCharModal();
+      showToast(`已成功新增漢字卡：${char}`);
+    }
+
+    function sendQuestionToAICoach(question, vocab) {
+      switchTab('ai-coach');
+      document.getElementById('aiQuestion').value = question;
+      document.getElementById('aiVocab').value = vocab;
+      showToast('已代入題目的 AI 面試界面');
+    }
+
+    async function evaluateAnswerWithGemini() {
+      const question = document.getElementById('aiQuestion').value.trim();
+      const vocab = document.getElementById('aiVocab').value.trim();
+      const studentAns = document.getElementById('aiStudentAnswer').value.trim();
+
+      if (!question || !studentAns) {
+        showToast('請輸入面試題目與學生的回答！');
+        return;
+      }
+
+      const btn = document.getElementById('aiEvaluateBtn');
+      const placeholder = document.getElementById('aiOutputPlaceholder');
+      const outputBox = document.getElementById('aiOutputContent');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> SPCC 考官分析中...`;
+
+      placeholder.classList.add('hidden');
+      outputBox.classList.remove('hidden');
+      outputBox.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12 space-y-3">
+          <i class="fa-solid fa-sparkles text-3xl text-cyan-400 animate-bounce"></i>
+          <p class="text-xs text-slate-400">Gemini AI 考官正依據聖保羅男女中學 (SPCC) 標準進行 4 維度嚴格點評...</p>
+        </div>
+      `;
+
+      const targetGrade = document.getElementById('targetGrade').value === 'primary' ? '小一入學神校組' : '中一自行收生組';
+
+      const systemPrompt = `你是一位負責香港頂尖名校「聖保羅男女中學 (SPCC)」的面試主考官。你的評分標準極其看重：
+1. 兩文三語表達能力 (Fluency & Precision)
+2. 邏輯結構與組織力 (三段式、二分法、多角度)
+3. 思辨深度與價值觀 (同理心、社會責任、人文關懷)
+4. 文學底蘊與高級詞彙/成語運用
+
+請針對學生的回答給出專業、有建設性且符合 SPCC 期望的點評。`;
+
+      const userPrompt = `【目標階段】：${targetGrade}
+【面試題目】：${question}
+【需融入字詞】：${vocab || '無特別指定'}
+【學生口述回答】：${studentAns}
+
+請以 JSON 格式回應，必須包含以下欄位：
+{
+  "totalScore": 88,
+  "dimensions": [
+    { "name": "邏輯結構與組織力", "score": "8/10", "feedback": "評語..." },
+    { "name": "高級詞彙與修辭", "score": "9/10", "feedback": "評語..." },
+    { "name": "思辨深度與價值觀", "score": "9/10", "feedback": "評語..." },
+    { "name": "雙語演講表達力", "score": "8/10", "feedback": "評語..." }
+  ],
+  "strengths": ["優點1", "優點2"],
+  "improvements": ["改進建議1", "改進建議2"],
+  "modelAnswer": "SPCC 神級滿分範例回答（150字左右，結構嚴密，富含高級成語與同理心）"
+}`;
+
+      try {
+        const apiKey = ""; // Runtime system injects key if left empty
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: userPrompt }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] },
+            generationConfig: {
+              responseMimeType: "application/json"
+            }
+          })
+        });
+
+        const result = await response.json();
+        const jsonText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (jsonText) {
+          const evalData = JSON.parse(jsonText);
+          renderAIEvaluationResult(evalData);
+        } else {
+          throw new Error('未取得有效評分數據');
+        }
+
+      } catch (err) {
+        console.error(err);
+        outputBox.innerHTML = `
+          <div class="p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-300 text-xs space-y-2">
+            <div class="font-bold"><i class="fa-solid fa-triangle-exclamation"></i> 點評生成失敗</div>
+            <p>請檢查網絡連接，或稍後再試。我們為您提供備用提示：請確保答題時使用了「第一、第二」及「成語拓展」。</p>
+          </div>
+        `;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-sparkles"></i> SPCC 考官評分與神級優化`;
+      }
+    }
+
+    function renderAIEvaluationResult(data) {
+      const outputBox = document.getElementById('aiOutputContent');
+      outputBox.innerHTML = `
+        <div class="space-y-4">
+          <!-- Score Badge Header -->
+          <div class="flex items-center justify-between bg-slate-900 p-4 rounded-xl border border-slate-800">
+            <div>
+              <div class="text-xs text-slate-400">SPCC 模擬面試綜合評分</div>
+              <div class="text-2xl font-serif font-black text-amber-400">${data.totalScore} <span class="text-xs text-slate-500 font-sans">/ 100 分</span></div>
+            </div>
+            <span class="px-3 py-1 rounded-full text-xs font-bold ${data.totalScore >= 85 ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'}">
+              ${data.totalScore >= 85 ? '具備 SPCC 頂尖錄取潛力' : '仍有精進空間'}
+            </span>
+          </div>
+
+          <!-- Dimensions Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            ${data.dimensions.map(d => `
+              <div class="bg-slate-900 p-3 rounded-lg border border-slate-800 space-y-1">
+                <div class="flex justify-between font-bold text-slate-200">
+                  <span>${d.name}</span>
+                  <span class="text-amber-400">${d.score}</span>
+                </div>
+                <p class="text-[11px] text-slate-400 line-clamp-2">${d.feedback}</p>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Strengths & Improvements -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div class="bg-emerald-500/5 p-3 rounded-xl border border-emerald-500/20 space-y-1">
+              <strong class="text-emerald-400 flex items-center gap-1"><i class="fa-solid fa-thumbs-up"></i> 亮點與表現：</strong>
+              <ul class="list-disc list-inside text-slate-300 space-y-0.5">
+                ${data.strengths.map(s => `<li>${s}</li>`).join('')}
+              </ul>
+            </div>
+
+            <div class="bg-amber-500/5 p-3 rounded-xl border border-amber-500/20 space-y-1">
+              <strong class="text-amber-400 flex items-center gap-1"><i class="fa-solid fa-circle-exclamation"></i> 考官優化建議：</strong>
+              <ul class="list-disc list-inside text-slate-300 space-y-0.5">
+                ${data.improvements.map(i => `<li>${i}</li>`).join('')}
+              </ul>
+            </div>
+          </div>
+
+          <!-- Model Answer -->
+          <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 space-y-2 text-xs">
+            <div class="flex justify-between items-center text-amber-400 font-serif font-bold">
+              <span><i class="fa-solid fa-crown mr-1"></i> SPCC 考官示範滿分回答 (Model Answer)：</span>
+              <button onclick="speakText(\`${data.modelAnswer.replace(/"/g, '')}\`)" class="text-slate-400 hover:text-amber-400 text-xs">
+                <i class="fa-solid fa-volume-high"></i> 聽示範朗讀
+              </button>
+            </div>
+            <p class="text-slate-200 font-serif leading-relaxed bg-slate-950 p-3 rounded-lg border border-slate-800">
+              ${data.modelAnswer}
+            </p>
+          </div>
+        </div>
+      `;
+    }
+
+    function speakChar(char) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(char);
+        msg.lang = 'zh-HK';
+        window.speechSynthesis.speak(msg);
+      } else {
+        showToast(`發音：${char}`);
+      }
+    }
+
+    function speakText(text) {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = 'zh-HK';
+        window.speechSynthesis.speak(msg);
+      } else {
+        showToast('瀏覽器不支援語音播放');
+      }
+    }
+
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-6 right-6 bg-amber-500 text-slate-950 px-4 py-2.5 rounded-xl font-bold text-xs shadow-xl z-50 transition transform duration-300 translate-y-2 opacity-0';
+      toast.innerText = msg;
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0');
+        setTimeout(() => toast.remove(), 300);
+      }, 2500);
+    }
+  </script>
+</body>
+</html>
